@@ -22,7 +22,7 @@ func TestMain(m *testing.M) {
 	var err error
 
 	testDB, err = pgxpool.New(ctx, dbSource)
-	if err != nil {
+	if err != nil {	
 		log.Fatalf("Cannot connect to db: %v", err)
 	}
 
