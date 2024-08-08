@@ -32,13 +32,9 @@ jobs:
       with:
         go-version: '1.22.x'
    
-    - name: Load env file
+    - name: Set up environment variables
       run: |
-        echo "Loading env file"
-        set -a
-        . ./app.env
-        set +a
-        echo "DB_SOURCE=$DB_SOURCE" >> $GITHUB_ENV
+        echo "DB_SOURCE=${{ secrets.DB_SOURCE }}" >> $GITHUB_ENV
 
     - name: Install golang-migration
       run: |

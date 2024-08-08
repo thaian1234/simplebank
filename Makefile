@@ -1,9 +1,17 @@
 #!make
 
+# Kiểm tra xem DB_SOURCE có được định nghĩa không
 ifeq ($(origin DB_SOURCE),undefined)
-    include app.env
-else
-    export DB_SOURCE
+    # Nếu không, thử load từ app.env
+    ifneq (,$(wildcard app.env))
+        include app.env
+        export $(shell sed 's/=.*//' app.env)
+    endif
+endif
+
+# Đảm bảo DB_SOURCE có giá trị
+ifndef DB_SOURCE
+    $(error DB_SOURCE is not set. Please set it in app.env or as an environment variable)
 endif
 
 postgres:
