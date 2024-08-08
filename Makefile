@@ -1,5 +1,5 @@
 #!make
-
+include app.env
 # Kiểm tra xem DB_SOURCE có được định nghĩa không
 ifeq ($(origin DB_SOURCE),undefined)
     # Nếu không, thử load từ app.env
@@ -21,17 +21,17 @@ createdb:
 dropdb:
 	docker exec -it postgres12 dropdb simple_bank
 migrateup:
-	migrate -path db/migrations -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose up
+	migrate -path db/migrations -database "${DB_SOURCE}" -verbose up
 migrateup1:
-	migrate -path db/migrations -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose up 1
+	migrate -path db/migrations -database "${DB_SOURCE}" -verbose up 1
 migratedown:
-	migrate -path db/migrations -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose down
+	migrate -path db/migrations -database "${DB_SOURCE}" -verbose down
 migratedown1:
-	migrate -path db/migrations -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose down 1
+	migrate -path db/migrations -database "${DB_SOURCE}" -verbose down 1
 resetdb:
 	docker exec -it postgres12 dropdb simple_bank
 	docker exec -it postgres12 createdb --username=root --owner=root simple_bank
-	migrate -path db/migrations -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose up
+	migrate -path db/migrations -database "${DB_SOURCE}" -verbose up
 sqlc:
 	sqlc generate
 	mockgen -package mockdb -destination db/mock/store.go github.com/thaian1234/simplebank/db/sqlc Store

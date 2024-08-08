@@ -39,7 +39,9 @@ jobs:
    
     - name: Set up environment variables
       run: |
-        echo "DB_SOURCE=${{ secrets.DB_SOURCE }}" >> $GITHUB_ENV
+        echo "DB_SOURCE=${{ secrets.DB_SOURCE }}" >> app.env
+        echo "DB_DRIVER=${{ secrets.DB_DRIVER }}" >> app.env
+        echo "SERVER_ADDRESS=${{ secrets.SERVER_ADDRESS }}" >> app.env
 
     - name: Install golang-migration
       run: |
