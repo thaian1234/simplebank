@@ -1,3 +1,6 @@
+#!make
+include app.env
+
 postgres:
 	docker run --name postgres12 -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres
 createdb:
@@ -5,13 +8,13 @@ createdb:
 dropdb:
 	docker exec -it postgres12 dropdb simple_bank
 migrateup:
-	migrate -path db/migrations -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose up
+	migrate -path db/migrations -database "${DB_SOURCE}" -verbose up
 migratedown:
-	migrate -path db/migrations -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose down
+	migrate -path db/migrations -database "${DB_SOURCE}" -verbose down
 resetdb:
 	docker exec -it postgres12 dropdb simple_bank
 	docker exec -it postgres12 createdb --username=root --owner=root simple_bank
-	migrate -path db/migrations -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose up
+	migrate -path db/migrations -database "${DB_SOURCE}" -verbose up
 sqlc:
 	sqlc generate
 test:
