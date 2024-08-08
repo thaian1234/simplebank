@@ -22,18 +22,23 @@ dropdb:
 	docker exec -it postgres12 dropdb simple_bank
 migrateup:
 	migrate -path db/migrations -database "${DB_SOURCE}" -verbose up
+migrateup1:
+	migrate -path db/migrations -database "${DB_SOURCE}" -verbose up 1
 migratedown:
 	migrate -path db/migrations -database "${DB_SOURCE}" -verbose down
+migratedown1:
+	migrate -path db/migrations -database "${DB_SOURCE}" -verbose down 1
 resetdb:
 	docker exec -it postgres12 dropdb simple_bank
 	docker exec -it postgres12 createdb --username=root --owner=root simple_bank
 	migrate -path db/migrations -database "${DB_SOURCE}" -verbose up
 sqlc:
 	sqlc generate
+	mockgen -package mockdb -destination db/mock/store.go github.com/thaian1234/simplebank/db/sqlc Store
 test:
 	go test -v -cover ./...
 server: 
 	go run main.go
 mock:
 	mockgen -package mockdb -destination db/mock/store.go github.com/thaian1234/simplebank/db/sqlc Store
-.PHONY: postgres createdb dropdb migrateup migratedown resetdb sqlc 
+.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown1 resetdb sqlc 
