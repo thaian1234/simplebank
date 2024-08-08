@@ -10,7 +10,7 @@ import (
 )
 
 const addAccountBalance = `-- name: AddAccountBalance :one
-UPDATE accounts SET balance = balance + $1 WHERE id =$2 RETURNING id, owner, balance, currency, created_at
+UPDATE accounts SET balance = balance + $1 WHERE id = $2 RETURNING id, owner, balance, currency, created_at
 `
 
 type AddAccountBalanceParams struct {
@@ -95,7 +95,7 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Account
+	items := []Account{}
 	for rows.Next() {
 		var i Account
 		if err := rows.Scan(
