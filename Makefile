@@ -1,5 +1,10 @@
 #!make
-include app.env
+
+ifeq ($(origin DB_SOURCE),undefined)
+    include app.env
+else
+    export DB_SOURCE
+endif
 
 postgres:
 	docker run --name postgres12 -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres
