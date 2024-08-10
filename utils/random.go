@@ -9,20 +9,22 @@ import (
 
 const alphabet = "abcdefghijklmnopgrstuvwxyz"
 
+var r *rand.Rand
+
 func init() {
-	rand.Seed(time.Now().UnixNano())
+	r = rand.New(rand.NewSource(time.Now().Unix()))
 }
 
 // RandomInt generate a random integer between min and max
 func RandomInt(min, max int64) int64 {
-	return min + rand.Int63n(max-min+1) //min -> max
+	return min + r.Int63n(max-min+1) //min -> max
 }
 
 func RandomString(n int) string {
 	var sb strings.Builder
 	k := len(alphabet)
 	for i := 0; i < n; i++ {
-		c := alphabet[rand.Intn(k)]
+		c := alphabet[r.Intn(k)]
 		sb.WriteByte(c)
 	}
 	return sb.String()
@@ -42,7 +44,7 @@ func RandomCurrency() string {
 		currencies = append(currencies, k)
 	}
 	n := len(currencies)
-	return currencies[rand.Intn(n)]
+	return currencies[r.Intn(n)]
 }
 
 func RandomEmail() string {

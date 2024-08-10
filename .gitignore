@@ -17,6 +17,10 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
+#vscode folder
+.vscode/*
+!.vscode/launch.json
+
 # Go workspace file
 go.work
 go.work.sum
@@ -25,5 +29,3 @@ go.work.sum
 .env
 app.env
 
-#vscode file
-*.vscode

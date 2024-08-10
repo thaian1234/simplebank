@@ -13,7 +13,7 @@ import (
 type createUserRequest struct {
 	Username string `json:"username" binding:"required,alphanum"`
 	Password string `json:"password" binding:"required,min=6"`
-	Fullname string `json:"full_name" binding:"required"`
+	FullName string `json:"full_name" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
 }
 
@@ -38,9 +38,9 @@ func (server *Server) createUser(ctx *gin.Context) {
 	}
 	args := db.CreateUserParams{
 		Username:       req.Username,
-		FullName:       req.Fullname,
-		Email:          req.Email,
 		HashedPassword: hasedPassword,
+		FullName:       req.FullName,
+		Email:          req.Email,
 	}
 	user, err := server.store.CreateUser(ctx, args)
 	if err != nil {
