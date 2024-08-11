@@ -7,17 +7,17 @@ import (
 	"github.com/google/uuid"
 )
 
-type JWTData struct {
+type UserClaims struct {
 	jwt.RegisteredClaims
 	Username string `json:"username"`
 }
 
-func NewJWTData(username string, duration time.Duration) (*JWTData, error) {
+func NewUserClaims(username string, duration time.Duration) (*UserClaims, error) {
 	tokenID, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
 	}
-	jwtData := &JWTData{
+	jwtData := &UserClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(duration)),
 			ID:        tokenID.String(),
@@ -29,9 +29,9 @@ func NewJWTData(username string, duration time.Duration) (*JWTData, error) {
 	return jwtData, nil
 }
 
-func (jd *JWTData) Validate() error {
+func (jd *UserClaims) Validate() error {
 	if time.Now().After(jd.ExpiresAt.Time) {
-		return ErrExpiredToken
+		return jwt.ErrTokenExpired
 	}
 	return nil
 }

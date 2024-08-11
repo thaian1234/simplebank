@@ -1,11 +1,13 @@
 package api
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
-	"github.com/thaian1234/simplebank/api/user"
 	db "github.com/thaian1234/simplebank/db/sqlc"
+	"github.com/thaian1234/simplebank/token"
+	"github.com/thaian1234/simplebank/utils"
 )
 
 const (
@@ -16,21 +18,38 @@ const (
 
 // Server serves HTTP request for our banking service
 type Server struct {
-	store  db.Store
-	router *gin.Engine
+	store      db.Store
+	router     *gin.Engine
+	tokenMaker token.MakerV5
+	config     utils.Config
 }
 
 // NewServer create a new HTTP server and setup routing
-func NewServer(store db.Store) *Server {
+func NewServer(config utils.Config, store db.Store) (*Server, error) {
+	tokenMaker, err := token.NewPasetoMakerV5(config.TokenSymmetricKey)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create token maker: %w", err)
+	}
 	server := &Server{
-		store: store,
+		store:      store,
+		tokenMaker: tokenMaker,
+		config:     config,
 	}
 	gin.ForceConsoleColor()
-	router := gin.Default()
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		v.RegisterValidation("currency", validCurrency)
+		err := v.RegisterValidation("currency", validCurrency)
+		if err != nil {
+			return nil, err
+		}
 	}
+
+	server.setupRouter()
+	return server, nil
+}
+
+func (server *Server) setupRouter() {
+	router := gin.Default()
 	//accounts
 	server.registerAccountsRouter(router)
 	//transfers
@@ -38,10 +57,7 @@ func NewServer(store db.Store) *Server {
 	//users
 	server.registerUsersRouter(router)
 
-	server.registerUserRouter(router)
-
 	server.router = router
-	return server
 }
 
 func (server *Server) registerAccountsRouter(router *gin.Engine) {
@@ -51,7 +67,6 @@ func (server *Server) registerAccountsRouter(router *gin.Engine) {
 		accounts.GET("/:id", server.getAccount)
 		accounts.GET("/", server.getListAccounts)
 	}
-
 }
 
 func (server *Server) registerTransfersRouter(router *gin.Engine) {
@@ -65,12 +80,8 @@ func (server *Server) registerUsersRouter(router *gin.Engine) {
 	users := router.Group(usersPath)
 	{
 		users.POST("/", server.createUser)
+		users.POST("/login", server.loginUser)
 	}
-}
-
-func (server *Server) registerUserRouter(router *gin.Engine) {
-	user := user.NewUserRouter(server.store, "/user")
-	user.Routes(router)
 }
 
 func (server *Server) Start(address string) error {

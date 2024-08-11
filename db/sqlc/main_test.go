@@ -16,7 +16,7 @@ var testDB *pgxpool.Pool
 func TestMain(m *testing.M) {
 	var err error
 	var config utils.Config
-	env := utils.NewEnviroment("../..")
+	env := utils.NewEnvironment("../..")
 	config, err = env.GetConfig()
 
 	if err != nil {

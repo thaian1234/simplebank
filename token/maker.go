@@ -13,5 +13,5 @@ type MakerV5 interface {
 	GenerateToken(username string, duration time.Duration) (string, error)
 
 	//VerifyToken checks if the token is valid or not
-	VerifyToken(token string) (*JWTData, error)
+	VerifyToken(token string) (*UserClaims, error)
 }

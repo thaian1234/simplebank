@@ -73,7 +73,7 @@ func TestJWTMakerV5_InvalidToken(t *testing.T) {
 }
 
 func TestInvalidJWTTokenAlgNone(t *testing.T) {
-	payload, err := NewJWTData(utils.RandomOwner(), time.Minute)
+	payload, err := NewUserClaims(utils.RandomOwner(), time.Minute)
 	require.NoError(t, err)
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodNone, payload)
 	token, err := jwtToken.SignedString(jwt.UnsafeAllowNoneSignatureType)

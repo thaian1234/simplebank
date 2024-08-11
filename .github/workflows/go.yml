@@ -30,29 +30,29 @@ jobs:
           - 5432:5432
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.22.x'
-   
-    - name: Set up environment variables
-      run: |
-        echo "DB_SOURCE=${{ secrets.DB_SOURCE }}" >> app.env
-        echo "DB_DRIVER=${{ secrets.DB_DRIVER }}" >> app.env
-        echo "SERVER_ADDRESS=${{ secrets.SERVER_ADDRESS }}" >> app.env
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22.x'
 
-    - name: Install golang-migration
-      run: |
-        curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.1/migrate.linux-amd64.tar.gz | tar xvz
-        sudo mv migrate /usr/bin/migrate
-        which migrate
+      - name: Set up environment variables
+        run: |
+          echo "DB_SOURCE=${{ secrets.DB_SOURCE }}" >> app.env
+          echo "DB_DRIVER=${{ secrets.DB_DRIVER }}" >> app.env
+          echo "SERVER_ADDRESS=${{ secrets.SERVER_ADDRESS }}" >> app.env
 
-    - name: Run migrations
-      run: make migrateup
+      - name: Install golang-migration
+        run: |
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.1/migrate.linux-amd64.tar.gz | tar xvz
+          sudo mv migrate /usr/bin/migrate
+          which migrate
 
-    - name: Test
-      run: make test
-      env: 
-        DB_SOURCE: ${{ secrets.DB_SOURCE }}
+      - name: Run migrations
+        run: make migrateup
+
+      - name: Test
+        run: make test
+        env:
+          DB_SOURCE: ${{ secrets.DB_SOURCE }}
