@@ -35,7 +35,6 @@ func NewServer(config utils.Config, store db.Store) (*Server, error) {
 		tokenMaker: tokenMaker,
 		config:     config,
 	}
-	gin.ForceConsoleColor()
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		err := v.RegisterValidation("currency", validCurrency)
@@ -61,7 +60,7 @@ func (server *Server) setupRouter() {
 }
 
 func (server *Server) registerAccountsRouter(router *gin.Engine) {
-	accounts := router.Group(accountsPath)
+	accounts := router.Group(accountsPath).Use(authMiddleware(server.tokenMaker))
 	{
 		accounts.POST("/", server.createAccount)
 		accounts.GET("/:id", server.getAccount)
@@ -70,7 +69,7 @@ func (server *Server) registerAccountsRouter(router *gin.Engine) {
 }
 
 func (server *Server) registerTransfersRouter(router *gin.Engine) {
-	transfers := router.Group(transfersPath)
+	transfers := router.Group(transfersPath).Use(authMiddleware(server.tokenMaker))
 	{
 		transfers.POST("/", server.createTransfer)
 	}

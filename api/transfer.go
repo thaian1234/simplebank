@@ -1,6 +1,8 @@
 package api
 
 import (
+	"errors"
+	"github.com/thaian1234/simplebank/token"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -20,14 +22,23 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	if !server.validServer(ctx, req.FromAccountID, req.Currency) {
-		ctx.JSON(http.StatusNotAcceptable, msgResponse("Invalid currency"))
+	fromAccount, valid := server.validAccount(ctx, req.FromAccountID, req.Currency)
+	if !valid {
 		return
 	}
-	if !server.validServer(ctx, req.ToAccountID, req.Currency) {
-		ctx.JSON(http.StatusNotAcceptable, msgResponse("Invalid currency"))
+
+	authClaims := ctx.MustGet(authorizationClaimsKey).(*token.UserClaims)
+	if fromAccount.Owner != authClaims.Username {
+		err := errors.New("acount doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
+
+	_, valid = server.validAccount(ctx, req.ToAccountID, req.Currency)
+	if !valid {
+		return
+	}
+
 	args := db.TransferTxParams{
 		FromAccountID: req.FromAccountID,
 		ToAccountID:   req.ToAccountID,
@@ -41,13 +52,13 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, transfer)
 }
 
-func (server *Server) validServer(ctx *gin.Context, accountID int64, currency string) bool {
+func (server *Server) validAccount(ctx *gin.Context, accountID int64, currency string) (db.Account, bool) {
 	account, err := server.store.GetAccount(ctx, accountID)
 	if err != nil {
-		return false
+		return account, false
 	}
 	if account.Currency != currency {
-		return false
+		return account, false
 	}
-	return true
+	return account, true
 }

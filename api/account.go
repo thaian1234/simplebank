@@ -1,6 +1,8 @@
 package api
 
 import (
+	"errors"
+	"github.com/thaian1234/simplebank/token"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,7 +12,6 @@ import (
 )
 
 type createAccountRequest struct {
-	Owner    string `json:"owner" binding:"required"`
 	Currency string `json:"currency" binding:"required,currency"`
 }
 
@@ -20,14 +21,16 @@ func (server *Server) createAccount(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+	authClaims := ctx.MustGet(authorizationClaimsKey).(*token.UserClaims)
 	args := db.CreateAccountParams{
-		Owner:    req.Owner,
+		Owner:    authClaims.Username,
 		Balance:  0,
 		Currency: req.Currency,
 	}
 	account, err := server.store.CreateAccount(ctx, args)
 	if err != nil {
-		if pgErr, ok := err.(*pgconn.PgError); ok {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
 			case "23503": // foreign_key_violation
 				ctx.JSON(http.StatusForbidden, errorResponse(err))
@@ -55,11 +58,17 @@ func (server *Server) getAccount(ctx *gin.Context) {
 	}
 	account, err := server.store.GetAccount(ctx, req.ID)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	authClaims := ctx.MustGet(authorizationClaimsKey).(*token.UserClaims)
+	if account.Owner != authClaims.Username {
+		err := errors.New("acount doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 	ctx.JSON(http.StatusOK, account)
@@ -76,8 +85,10 @@ func (server *Server) getListAccounts(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+	authClaims := ctx.MustGet(authorizationClaimsKey).(*token.UserClaims)
 	accounts, err := server.store.ListAccounts(ctx, db.ListAccountsParams{
-		Limit:  (req.PageSize),
+		Owner:  authClaims.Username,
+		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
 	})
 	if err != nil {
