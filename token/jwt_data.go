@@ -19,8 +19,8 @@ func NewUserClaims(username string, duration time.Duration) (*UserClaims, error)
 	}
 	jwtData := &UserClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(duration)),
 			ID:        tokenID.String(),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(duration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
 		},
