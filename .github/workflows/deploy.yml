@@ -13,6 +13,14 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Set up environment variables
+        run: |
+          echo "DB_SOURCE=${{ secrets.DB_SOURCE }}" >> app.env
+          echo "DB_DRIVER=${{ secrets.DB_DRIVER }}" >> app.env
+          echo "SERVER_ADDRESS=${{ secrets.SERVER_ADDRESS }}" >> app.env
+          echo "TOKEN_SYMMETRIC_KEY=${{ secrets.TOKEN_SYMMETRIC_KEY }}" >> app.env
+          echo "ACCESS_TOKEN_DURATION=${{ secrets.ACCESS_TOKEN_DURATION }}" >> app.env
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4 # More information on this action can be found below in the 'AWS Credentials' section
         with:
